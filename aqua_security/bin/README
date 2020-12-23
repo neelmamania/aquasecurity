@@ -1,7 +1,0 @@
-Aqua's Container Security Platform provides full visibility into container activity, allowing organizations to detect and prevent suspicious activity and attacks, providing transparent, automated security while helping to enforce policy and simplify regulatory compliance.
-
-INSTALLATION INSTRUCTIONS
--------------------------
-After adding the app to your splunk instance a setup page will be displayed for the first time. Before filling the values in setup page, kindly create the http event collector and share the token with AQUA Security for data collection. Make sourcetype as "_json". Then add the index and sourcetype to the setup page.
-
- The app will open to the dahsboard which displays multiple panel. 

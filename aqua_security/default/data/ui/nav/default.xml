@@ -1,4 +1,0 @@
-<nav search_view="search" color="#405a75">
-  <view name="security_events_overview" default='true'/>
-  <view name="search"  />
-</nav>
