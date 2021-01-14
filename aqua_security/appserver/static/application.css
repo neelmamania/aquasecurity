@@ -1,0 +1,19 @@
+
+
+/* Header Coloring */
+
+ .splunk-header.splunk-view.splunk-header.splunk-view > div[data-view="views/shared/appbar/Master"] {
+     background-color: #BABABA;
+     color: #000000 !important;
+ }
+ 
+ .splButton-primary,
+ input.searchButton {
+     background : #EDF1F4 !important;
+	 color: #EDF1F4 !important;
+ }
+ .splButton-primary:hover,
+ input.searchButton:hover {
+     background : #EDF1F4 !important;
+	 color: #EDF1F4 !important;
+ }

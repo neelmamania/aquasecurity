@@ -1,0 +1,227 @@
+<form theme="dark" stylesheet="application.css">
+  <label>AquaSecurity – Security Events Overview</label>
+  <fieldset submitButton="false">
+    <input type="time" token="time">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Runtime Security Events</title>
+      <chart>
+        <search>
+          <query>`set_index` result&gt;1 (rule_type="runtime.policy" OR rule_type="access.control") | timechart count span=1h by category</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Blocked Actions</title>
+      <chart>
+        <search>
+          <query>`set_index` | spath data | search result=2 AND reason!="" | timechart count span=1h by reason</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+      <h2 style="color: #08b1d5;text-align: center;font-size: 20px !important;">
+          <b>Policy Violation</b>
+      </h2>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Breakdown by Policy</title>
+      <table id="hide_select_columns_unique_rule">
+        <search>
+          <query>`set_index` | search result&gt;1 rule!="" | eval unique_rule= rule."(".rule_type.")" | bin span=12h _time | chart sparkline count  by unique_rule  | sort 10 - count | eval unique_rule_raw='unique_rule' | `long_line_breaker(unique_rule)`</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#DC4E41" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Breakdown by Host</title>
+      <table id="hide_select_columns_ext_host">
+        <search>
+          <query>`set_index` result&gt;1 |  rex field=_raw "\"host\"\:\"(?&lt;ext_host&gt;[^\"]*)"  | search ext_host = "*.*" | chart sparkline count(ext_host) as count by ext_host | sort - count | eval ext_host_raw='ext_host' | `long_line_breaker(ext_host)`</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="wrap">true</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#DC4E41" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Breakdown by Image</title>
+      <table id="hide_select_columns_image">
+        <search>
+          <query>`set_index` result&gt;1 | search container!="" containerid!="" | chart sparkline count by image  | sort - count | head 10 | eval image_raw='image' |`long_line_breaker(image)`</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#DC4E41" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">search?q=%60set_index%60%20result%3E1%20%7C%20search%20container!=%22%22%20containerid!=%22%22%20image=%22$row.image_raw$%22&amp;earliest=$time.earliest$&amp;latest=$time.latest$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row depends="$hidden$">
+    <panel>
+      <html>
+      <style type="text/css">
+        div#hide_select_columns_image th:nth-child(4), div#hide_select_columns_image td:nth-child(4) { display:none !important;}
+      </style>
+    </html>
+    </panel>
+    <panel>
+      <html>
+      <style type="text/css">
+        div#hide_select_columns_ext_host th:nth-child(4), div#hide_select_columns_ext_host td:nth-child(4) { display:none !important;}
+      </style>
+    </html>
+    </panel>
+    <panel>
+      <html>
+      <style type="text/css">
+        div#hide_select_columns_unique_rule th:nth-child(4), div#hide_select_columns_unique_rule td:nth-child(4) { display:none !important;}
+      </style>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+      <h2 style="color: #08b1d5;text-align: center;font-size: 20px !important;">
+          <b>Security Compliance Events</b>
+      </h2>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>`set_index`| search user="host.Policy" | stats dc(image)</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,50]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="underLabel">Non-Compliant Hosts</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">search?q=%60set_index%60%20%20user=%22host.Policy%22%20result%3E1%20%20%7C%20spath%20input=data%20%7C%20mvexpand%20controls%7B%7D%20%7C%20rename%20image%20as%20host%20%7C%20dedup%20host,controls%7B%7D%20%7C%20table%20%20host%20,policy_name,controls%7B%7D%20%7C%20mvcombine%20controls%7B%7D&amp;earliest=$time.earliest$&amp;latest=$time.latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>`set_index` | search user="image.policy" | stats dc(image)</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,50]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="underLabel">Non-Compliant Images</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">search?q=%60set_index%60%20%20%20user=%22image.Policy%22%20result%3E1%20%20%7C%20spath%20input=data%20%7C%20mvexpand%20controls%7B%7D%20%7C%20dedup%20image,registry,policy_name,controls%7B%7D%20%7C%20%20mvcombine%20controls%7B%7D%20%7C%20table%20%20image,%20registry,%20policy_name,controls%7B%7D&amp;earliest=$time.earliest$&amp;latest=$time.latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>`set_index` | search action=start result&gt;1 image!="" | stats dc(image)</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,50]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="underLabel">Non-Compliant Container Activations</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">search?q=%60set_index%60%20%20action=start%20result%3E1%20image!=%22%22%20%7C%20eval%20controldone=case(result==2,%20%22Detect%22,%20result==3,%20%22Block%22)%20%7C%20dedup%20image,%20controldone,%20reason%20%7C%20table%20%20image,%20controldone,reason&amp;earliest=$time.earliest$&amp;latest=$time.latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>`set_index` | search user="function.policy" | stats dc(image)</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,50]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="underLabel">Non-Compliant Functions</option>
+        <option name="useColors">1</option>
+        <drilldown>
+          <link target="_blank">search?q=%60set_index%60%20%20user=%22function.Policy%22%20result%3E1%20%20%7C%20spath%20input=data%20%7C%20mvexpand%20controls%7B%7D%20%7C%20rename%20image%20as%20Function%20%7C%20dedup%20Function,controls%7B%7D%20%7C%20table%20%20Function%20,policy_name,controls%7B%7D%20%7C%20mvcombine%20controls%7B%7D&amp;earliest=$time.earliest$&amp;latest=$time.latest$</link>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row depends="$hidden_token$">
+    <panel>
+      <html>
+        <style>
+          .dashboard-row .dashboard-panel h2.panel-title {
+            font-size: 20px !important;
+            color: #ffc900;
+          }
+        </style>
+      </html>
+    </panel>
+  </row>
+</form>
