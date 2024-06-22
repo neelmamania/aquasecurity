@@ -1,1 +1,1 @@
-Documentation to be available soon
+https://github.com/neelmamania/aquasecurity/blob/master/AquaSecurity%20Installation%20and%20Configuration.pdf
